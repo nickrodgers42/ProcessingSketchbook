@@ -1,9 +1,9 @@
 package org.example.boids;
 
 abstract class Mover {
-    Vector2 position;
-    Vector2 velocity;
-    Vector2 acceleration;
+    Vector2 position = new Vector2();
+    Vector2 velocity = new Vector2();
+    Vector2 acceleration = new Vector2();
     double mass = 1;
 
     public Vector2 getPosition() {
@@ -33,5 +33,13 @@ abstract class Mover {
     public void applyForce(Vector2 force) {
         Vector2 appliedForce = Vector2.div(force, mass);
         this.acceleration.add(appliedForce);
+    }
+
+    public void setMass(double mass) {
+        this.mass = mass;
+    }
+
+    public double getMass() {
+        return this.mass;
     }
 }

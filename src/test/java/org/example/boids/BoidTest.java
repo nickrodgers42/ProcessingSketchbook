@@ -16,27 +16,27 @@ public class BoidTest {
         Boid secondBoid = new Boid();
         boidList.add(secondBoid);
 
-        assertEquals(testBoid.getBoidsInView(boidList).size(), 0);
+        assertEquals(testBoid.getVisibleBoids(boidList).size(), 0);
 
         secondBoid.setPosition(new Vector2(0, 101));
-        assertEquals(testBoid.getBoidsInView(boidList).size(), 0);
+        assertEquals(testBoid.getVisibleBoids(boidList).size(), 0);
 
         secondBoid.setPosition(new Vector2(0, 1));
-        assertEquals(testBoid.getBoidsInView(boidList).size(), 1);
+        assertEquals(testBoid.getVisibleBoids(boidList).size(), 1);
 
         secondBoid.setPosition(new Vector2(0, -1));
-        assertEquals(testBoid.getBoidsInView(boidList).size(), 0);
+        assertEquals(testBoid.getVisibleBoids(boidList).size(), 0);
 
         secondBoid.setPosition(new Vector2(-Math.sqrt(2) / 2, -Math.sqrt(2) / 2));
-        assertEquals(testBoid.getBoidsInView(boidList).size(), 1);
+        assertEquals(testBoid.getVisibleBoids(boidList).size(), 1);
 
         secondBoid.setPosition(new Vector2(-1 / 2, -Math.sqrt(3) / 2));
-        assertEquals(testBoid.getBoidsInView(boidList).size(), 0);
+        assertEquals(testBoid.getVisibleBoids(boidList).size(), 0);
 
         secondBoid.setPosition(new Vector2(Math.sqrt(2) / 2, -Math.sqrt(2) / 2));
-        assertEquals(testBoid.getBoidsInView(boidList).size(), 1);
+        assertEquals(testBoid.getVisibleBoids(boidList).size(), 1);
 
         secondBoid.setPosition(new Vector2(1 / 2, -Math.sqrt(3) / 2));
-        assertEquals(testBoid.getBoidsInView(boidList).size(), 0);
+        assertEquals(testBoid.getVisibleBoids(boidList).size(), 0);
     }
 }

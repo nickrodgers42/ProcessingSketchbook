@@ -123,6 +123,11 @@ public class Vector2 {
             (this.y - v.getY()) * (this.y - v.getY()));
     }
 
+    public static double distance(Vector2 v1, Vector2 v2) {
+        double x = v2.getX() - v1.getX();
+        double y = v2.getY() - v1.getY();
+        return Math.sqrt(x * x + y * y);
+    }
 
     public double dot(Vector2 v) {
         return this.x * v.getX() + this.y * v.getY();

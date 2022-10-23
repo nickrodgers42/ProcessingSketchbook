@@ -1,33 +1,42 @@
 package org.example.boids;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
 
 public class Boid extends Vehicle {
-    private double maxSpeed = 4;
     private double viewingRadius = 50;
     private double viewingAngle = Math.PI;
     private double desiredSeparation = 30;
     private boolean debug = false;
     private boolean red = false;
     private ArrayList<Boid> visibleBoids = new ArrayList<>();
+    private ArrayList<Vector2> trail = new ArrayList<>();
+    private int trailSize = 60;
+    private boolean renderTrail = false;
+    private Logger logger = Logger.getLogger("BoidLogger");
 
     public void setRed(boolean b) {
         this.red = b;
     }
 
+    private void setBoidProperties() {
+        this.maxSpeed = 4;
+        this.maxForce = 0.1;
+    }
+
     public Boid() {
-        this.position = new Vector2();
-        this.velocity = new Vector2();
-        this.acceleration = new Vector2();
+        this.setBoidProperties();
     }
 
     public Boid(Vector2 position, Vector2 velocity, Vector2 acceleration) {
         this.position = position;
         this.velocity = velocity;
         this.acceleration = acceleration;
+        this.setBoidProperties();
     }
 
     public Boid(Vector2 position, Vector2 velocity, Vector2 acceleration, boolean debug) {
@@ -35,20 +44,32 @@ public class Boid extends Vehicle {
         this.velocity = velocity;
         this.acceleration = acceleration;
         this.debug = debug;
+        this.setBoidProperties();
     }
 
-    public ArrayList<Boid> getBoidsInView(ArrayList<Boid> boidList) {
+    public Boid(Vector2 screenSize) {
+        this.position = new Vector2(
+            Math.random() * screenSize.getX(),
+            Math.random() * screenSize.getY());
+        this.velocity = new Vector2(
+            Math.random() * this.maxSpeed * 2 - this.maxSpeed,
+            Math.random() * this.maxSpeed * 2 - this.maxSpeed);
+        this.setBoidProperties();
+    }
+
+    public ArrayList<Boid> getVisibleBoids(ArrayList<Boid> boidList) {
         ArrayList<Boid> inView = new ArrayList<>();
         for (Boid b : boidList) {
             b.setRed(false);
-            if (b.getPosition().equals(this.position)) {
+            if (b == this) {
                 continue;
             }
             if (this.position.distance(b.getPosition()) > viewingRadius) {
                 continue;
             }
             Vector2 target = Vector2.sub(b.getPosition(), this.position);
-            if (Math.abs(Vector2.angleBetween(this.velocity, target)) > viewingAngle) {
+            double angleToTarget = Vector2.angleBetween(this.velocity, target);
+            if (Math.abs(angleToTarget) > viewingAngle) {
                 continue;
             }
             inView.add(b);
@@ -147,14 +168,26 @@ public class Boid extends Vehicle {
         }
     }
 
-    public void update(double deltaTime, PApplet sketch, ArrayList<Boid> boidList) {
-        this.visibleBoids = getBoidsInView(boidList);
+    public void updateTrail() {
+        trail.add(new Vector2(this.position));
+        if (trail.size() > this.trailSize) {
+            trail.remove(0);
+        }
+    }
 
+    public void update(double deltaTime, PApplet sketch, ArrayList<Boid> boidList) {
+        this.visibleBoids = getVisibleBoids(boidList);
+
+        this.updateTrail();
         if (this.debug) {
-            System.out.println("There are " + this.visibleBoids.size() + " boids in view");
+            logger.log(
+                Level.FINE,
+                "There are " + this.visibleBoids.size() + " boids in view");
         }
 
-        // this.applyForce(avoidWalls(new Vector2(sketch.width, sketch.height)));
+        Vector2 wallForce = avoidWalls(new Vector2(sketch.width, sketch.height));
+        wallForce.mult(0.1);
+        // this.applyForce(wallForce);
         this.applyForce(separate(this.visibleBoids));
         this.applyForce(align(this.visibleBoids));
         this.applyForce(cohesion(this.visibleBoids));
@@ -170,6 +203,7 @@ public class Boid extends Vehicle {
         sketch.pushMatrix();
         sketch.translate((int)position.getX(), (int)position.getY());
         sketch.rotate((float)(velocity.heading() + Math.PI / 2));
+        sketch.stroke(0);
         sketch.fill(0, 255, 255);
         if (this.debug) {
             sketch.fill(255, 0, 0);
@@ -207,10 +241,29 @@ public class Boid extends Vehicle {
         }
     }
 
+    public void drawTrail(PApplet sketch) {
+        sketch.stroke(0, 255, 255, 60);
+        for (int i = 0; i < trail.size() - 1; ++i) {
+            Vector2 point1 = trail.get(i);
+            Vector2 point2 = trail.get(i + 1);
+            if (point1.distance(point2) >= Math.min(sketch.width, sketch.height) - 25) {
+                continue;
+            }
+            sketch.line(
+                (int)point1.getX(),
+                (int)point1.getY(),
+                (int)point2.getX(),
+                (int)point2.getY());
+        }
+    }
+
     public void draw(PApplet sketch) {
         if (this.debug) {
             drawPerceptionRadius(sketch);
             drawLinesToVisibleBoids(sketch);
+        }
+        if (this.renderTrail) {
+            drawTrail(sketch);
         }
         drawBoid(sketch);
     }

@@ -7,7 +7,6 @@ import processing.core.PApplet;
 public class Sketch extends PApplet {
     private DeltaTime deltaTime = new DeltaTime();
 
-    private Boid testBoid;
     private ArrayList<Boid> boidList = new ArrayList<>();
     private int numBoids = 200;
 
@@ -19,24 +18,15 @@ public class Sketch extends PApplet {
     @Override
     public void setup() {
         windowResize(980, 720);
-        testBoid = new Boid(
-            new Vector2(this.width / 2, this.height / 2),
-            new Vector2(Math.random() * 8 - 4, Math.random() * 8 - 4),
-            new Vector2());
-
         for (int i = 0; i < numBoids; ++i) {
             boidList.add(
-                new Boid(
-                    new Vector2(Math.random() * this.width, Math.random() * this.height),
-                    new Vector2(Math.random() * 8 - 4, Math.random() * 8 - 4),
-                    new Vector2()
-            ));
+                new Boid(new Vector2(this.width, this.height))
+            );
         }
     }
 
     public void update() {
         double dt = deltaTime.update();
-        testBoid.update(dt, this, this.boidList);
         for (Boid b : boidList) {
             b.update(dt, this, this.boidList);
         }
@@ -45,8 +35,7 @@ public class Sketch extends PApplet {
     @Override
     public void draw() {
         update();
-        background(255);
-        testBoid.draw(this);
+        background(60);
         for (Boid b : boidList) {
             b.draw(this);
         }
