@@ -45,4 +45,58 @@ public class Vector2 {
     public static Vector2 add(Vector2 v1, Vector2 v2) {
         return new Vector2(v1.getX() + v2.getX(), v1.getY() + v2.getY());
     }
+
+    public void mult(double n) {
+        this.x *= n;
+        this.y *= n;
+    }
+
+    public static Vector2 mult(Vector2 v, double n) {
+        return new Vector2(v.getX() * n, v.getY() * n);
+    }
+
+    public void sub(Vector2 v) {
+        this.x -= v.getX();
+        this.y -= v.getY();
+    }
+
+    public void div(double n) {
+        this.x /= n;
+        this.y /= n;
+    }
+
+    public double heading() {
+        double theta = Math.atan2(this.y, this.x);
+        if (theta < 0) {
+            theta += 2 * Math.PI;
+        }
+        return theta;
+    }
+
+    public String toString() {
+        return "(" + this.x + ", " + this.y + ")";
+    }
+
+    public static Vector2 fromAngle(double angle) {
+        return new Vector2(Math.cos(angle), Math.sin(angle));
+    }
+
+    public double mag() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
+    public void normalize() {
+        double magnitude = this.mag();
+        if (magnitude != 0) {
+            this.div(magnitude);
+        }
+    }
+
+    public void limit(double n) {
+        double magnitude = this.mag();
+        if (magnitude > n) {
+            this.normalize();
+            this.mult(n);
+        }
+    }
 }
