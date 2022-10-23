@@ -1,5 +1,7 @@
 package org.example.boids;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -58,6 +60,14 @@ public class Vector2Test {
     }
 
     @Test
+    public void testEquals() {
+        Vector2 vector = new Vector2();
+        assertTrue(vector.equals(new Vector2()));
+        vector.set(3.14, 1.61);
+        assertTrue(vector.equals(new Vector2(3.14, 1.61)));
+    }
+
+    @Test
     public void testAddVector() {
         Vector2 vectorA = new Vector2(1, 2);
         Vector2 vectorB = new Vector2(3, 4);
@@ -83,24 +93,75 @@ public class Vector2Test {
         assert vectorC.getY() == 6;
     }
 
+    @Test
+    public void testSubVector() {
+        Vector2 vectorA = new Vector2(5, 10);
+        Vector2 vectorB = new Vector2(3, 4);
+        vectorA.sub(vectorB);
+        Vector2 expected = new Vector2(2, 6);
+        assertTrue(vectorA.equals(expected));
+    }
+
+    @Test
+    public void testSubComponents() {
+        Vector2 vector = new Vector2(5, 10);
+        vector.sub(3, 4);
+        Vector2 expected = new Vector2(2, 6);
+        assertTrue(vector.equals(expected));
+    }
+
+    @Test
+    public void testStaticSub() {
+        Vector2 vectorA = new Vector2(5, 10);
+        Vector2 vectorB = new Vector2(3, 4);
+        Vector2 actual = Vector2.sub(vectorA, vectorB);
+        Vector2 expected = new Vector2(2, 6);
+        assertTrue(actual.equals(expected));
+    }
+
+    @Test
+    public void testMult() {
+        Vector2 vector = new Vector2(3, 4);
+        vector.mult(5);
+        Vector2 expected = new Vector2(15, 20);
+        assertTrue(vector.equals(expected));
+    }
+
+    @Test
+    public void testStaticMult() {
+        Vector2 vector = new Vector2(3, 4);
+        Vector2 actual = Vector2.mult(vector, 5);
+        Vector2 expected = new Vector2(15, 20);
+        assertTrue(actual.equals(expected));
+    }
+
+    @Test
+    public void testToString() {
+        Vector2 vector = new Vector2(3.14, 1.61);
+        String expected = "(3.14, 1.61)";
+        assertTrue(vector.toString().equals(expected));
+    }
+
     private static Stream<Arguments> headingProvider() {
         return Stream.of(
             Arguments.of(new Vector2(0, 0), 0),
             Arguments.of(new Vector2(1, 0), 0),
             Arguments.of(new Vector2(0, 1), Math.PI / 2),
             Arguments.of(new Vector2(-1, 0), Math.PI),
-            Arguments.of(new Vector2(0, -1), (3 * Math.PI) / 2),
+            Arguments.of(new Vector2(0, -1), (3 * Math.PI) / 2.0 - 2 * Math.PI),
             Arguments.of(new Vector2(1, 1), Math.PI / 4));
     }
 
     @ParameterizedTest
     @MethodSource("headingProvider")
     public void testHeading(Vector2 vector, double expectedHeading) {
+        System.out.println(vector.heading() + " " + expectedHeading);
         assert Math.abs(vector.heading() - expectedHeading) < 0.001;
     }
 
     @Test
     public void testFromAngle() {
+        assertTrue(Vector2.fromAngle(0).equals(new Vector2(1, 0)));
         Vector2 vector = Vector2.fromAngle(Math.PI);
         assert Math.abs(vector.getX() + 1) < 0.001;
         assert Math.abs(vector.getY()) < 0.001;
@@ -109,4 +170,26 @@ public class Vector2Test {
         assert Math.abs(vector.getX()) < 0.001;
     }
 
+    @Test
+    public void testAngleBetween() {
+        Vector2 vectorA = new Vector2(1, 0);
+        Vector2 vectorB = new Vector2(1, 1);
+        System.out.println(Vector2.angleBetween(vectorA, vectorB));
+        System.out.println(Math.PI / 4);
+        assert(Vector2.angleBetween(vectorA, vectorB) - Math.PI / 4 < 0.001);
+    }
+
+    @Test
+    public void testPosition() {
+        Vector2 vectorA = new Vector2();
+        Vector2 vectorB = new Vector2(1, 1);
+        assertTrue(vectorA.distance(vectorB) == Math.sqrt(2));
+        vectorB.set(-1, -1);
+        assertTrue(vectorA.distance(vectorB) == Math.sqrt(2));
+        vectorB.set(1, -1);
+        assertTrue(vectorA.distance(vectorB) == Math.sqrt(2));
+        vectorA.set(5, 10);
+        vectorB.set(9, 3);
+        assertTrue(vectorA.distance(vectorB) == Math.sqrt(65));
+    }
 }

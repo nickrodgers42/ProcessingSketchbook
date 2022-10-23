@@ -46,6 +46,20 @@ public class Vector2 {
         return new Vector2(v1.getX() + v2.getX(), v1.getY() + v2.getY());
     }
 
+    public void sub(Vector2 v) {
+        this.x -= v.getX();
+        this.y -= v.getY();
+    }
+
+    public void sub(double x, double y) {
+        this.x -= x;
+        this.y -= y;
+    }
+
+    public static Vector2 sub(Vector2 v1, Vector2 v2) {
+        return new Vector2(v1.getX() - v2.getX(), v1.getY() - v2.getY());
+    }
+
     public void mult(double n) {
         this.x *= n;
         this.y *= n;
@@ -55,14 +69,10 @@ public class Vector2 {
         return new Vector2(v.getX() * n, v.getY() * n);
     }
 
-    public void sub(Vector2 v) {
-        this.x -= v.getX();
-        this.y -= v.getY();
+    public boolean equals(Vector2 v) {
+        return (this.x == v.getX() && this.y == v.getY());
     }
 
-    public static Vector2 sub(Vector2 v1, Vector2 v2) {
-        return new Vector2(v1.getX() - v2.getX(), v1.getY() - v2.getY());
-    }
 
     public void div(double n) {
         this.x /= n;

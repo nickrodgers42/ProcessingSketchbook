@@ -9,11 +9,11 @@ public class Sketch extends PApplet {
 
     private Boid testBoid;
     private ArrayList<Boid> boidList = new ArrayList<>();
-    private int numBoids = 20;
+    private int numBoids = 200;
 
     @Override
     public void settings() {
-        size(500, 500);
+        size(980, 720);
     }
 
     @Override
@@ -21,8 +21,7 @@ public class Sketch extends PApplet {
         testBoid = new Boid(
             new Vector2(this.width / 2, this.height / 2),
             new Vector2(0, 0),
-            new Vector2(0, 0.1),
-            true);
+            new Vector2(0, 0.1));
         for (int i = 0; i < numBoids; ++i) {
             boidList.add(
                 new Boid(
@@ -45,9 +44,9 @@ public class Sketch extends PApplet {
     public void draw() {
         update();
         background(255);
-        testBoid.draw(this);
+        testBoid.draw(this, boidList);
         for (Boid b : boidList) {
-            b.draw(this);
+            b.draw(this, boidList);
         }
     }
 }
