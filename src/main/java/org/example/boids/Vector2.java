@@ -60,6 +60,10 @@ public class Vector2 {
         this.y -= v.getY();
     }
 
+    public static Vector2 sub(Vector2 v1, Vector2 v2) {
+        return new Vector2(v1.getX() - v2.getX(), v1.getY() - v2.getY());
+    }
+
     public void div(double n) {
         this.x /= n;
         this.y /= n;
@@ -67,9 +71,6 @@ public class Vector2 {
 
     public double heading() {
         double theta = Math.atan2(this.y, this.x);
-        if (theta < 0) {
-            theta += 2 * Math.PI;
-        }
         return theta;
     }
 
@@ -98,5 +99,38 @@ public class Vector2 {
             this.normalize();
             this.mult(n);
         }
+    }
+
+    public double distance(Vector2 v) {
+        return Math.sqrt(
+            (this.x - v.getX()) * (this.x - v.getX()) +
+            (this.y - v.getY()) * (this.y - v.getY()));
+    }
+
+
+    public double dot(Vector2 v) {
+        return this.x * v.getX() + this.y * v.getY();
+    }
+
+    public static double dot(Vector2 v1, Vector2 v2) {
+        return v1.getX() * v2.getX()  + v1.getY() * v2.getY();
+    }
+
+    public static double angleBetween(Vector2 v1, Vector2 v2) {
+        if (v1.getX() == 0 && v1.getY() == 0) {
+            return 0;
+        }
+        if (v2.getX() == 0 && v2.getY() == 0) {
+            return 0;
+        }
+        double dotVal = Vector2.dot(v1, v2);
+        double angle = dotVal / (v1.mag() * v2.mag());
+        if (angle <= -1) {
+            return Math.PI;
+        }
+        else if (angle >= 1) {
+            return 0;
+        }
+        return Math.acos(angle);
     }
 }
