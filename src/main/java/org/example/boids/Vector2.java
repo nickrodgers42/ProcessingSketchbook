@@ -79,6 +79,12 @@ public class Vector2 {
         this.y /= n;
     }
 
+    public static Vector2 div(Vector2 v, double n) {
+        return new Vector2(
+            v.getX() / n,
+            v.getY() / n);
+    }
+
     public double heading() {
         double theta = Math.atan2(this.y, this.x);
         return theta;

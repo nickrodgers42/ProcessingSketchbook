@@ -163,20 +163,19 @@ public class Vector2Test {
     public void testFromAngle() {
         assertTrue(Vector2.fromAngle(0).equals(new Vector2(1, 0)));
         Vector2 vector = Vector2.fromAngle(Math.PI);
-        assert Math.abs(vector.getX() + 1) < 0.001;
-        assert Math.abs(vector.getY()) < 0.001;
+        assertTrue(approximatelyEqual(vector.getX(), -1, 0.001));
+        assertTrue(approximatelyEqual(vector.getY(), 0, 0.001));
         vector = Vector2.fromAngle((3 * Math.PI) / 2);
-        assert Math.abs(vector.getY() + 1) < 0.001;
-        assert Math.abs(vector.getX()) < 0.001;
+        assertTrue(approximatelyEqual(vector.getY(), -1, 0.001));
+        assertTrue(approximatelyEqual(vector.getX(), 0, 0.001));
     }
 
     @Test
     public void testAngleBetween() {
         Vector2 vectorA = new Vector2(1, 0);
         Vector2 vectorB = new Vector2(1, 1);
-        System.out.println(Vector2.angleBetween(vectorA, vectorB));
-        System.out.println(Math.PI / 4);
-        assert(Vector2.angleBetween(vectorA, vectorB) - Math.PI / 4 < 0.001);
+        assert(Math.abs(
+            Vector2.angleBetween(vectorA, vectorB) - Math.PI / 4) < 0.001);
     }
 
     @Test
@@ -191,5 +190,17 @@ public class Vector2Test {
         vectorA.set(5, 10);
         vectorB.set(9, 3);
         assertTrue(vectorA.distance(vectorB) == Math.sqrt(65));
+    }
+
+    public boolean approximatelyEqual(double a, double b, double absDiff) {
+        double diff = Math.abs(a - b);
+        if (diff < absDiff) {
+            return true;
+        }
+        diff = Math.abs(b - a);
+        if (diff < absDiff) {
+            return true;
+        }
+        return false;
     }
 }

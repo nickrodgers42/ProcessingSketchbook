@@ -18,16 +18,18 @@ public class Sketch extends PApplet {
 
     @Override
     public void setup() {
+        windowResize(980, 720);
         testBoid = new Boid(
             new Vector2(this.width / 2, this.height / 2),
-            new Vector2(0, 0),
-            new Vector2(0, 0.1));
+            new Vector2(Math.random() * 8 - 4, Math.random() * 8 - 4),
+            new Vector2());
+
         for (int i = 0; i < numBoids; ++i) {
             boidList.add(
                 new Boid(
                     new Vector2(Math.random() * this.width, Math.random() * this.height),
-                    new Vector2(0, 0),
-                    new Vector2(Math.random() * 0.1, Math.random() * 0.1)
+                    new Vector2(Math.random() * 8 - 4, Math.random() * 8 - 4),
+                    new Vector2()
             ));
         }
     }
@@ -44,9 +46,9 @@ public class Sketch extends PApplet {
     public void draw() {
         update();
         background(255);
-        testBoid.draw(this, boidList);
+        testBoid.draw(this);
         for (Boid b : boidList) {
-            b.draw(this, boidList);
+            b.draw(this);
         }
     }
 }

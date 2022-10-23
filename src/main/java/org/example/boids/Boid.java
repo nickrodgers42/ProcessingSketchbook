@@ -5,17 +5,14 @@ import java.util.ArrayList;
 import processing.core.PApplet;
 import processing.core.PConstants;
 
-public class Boid {
-    private Vector2 position;
-    private Vector2 velocity;
-    private Vector2 acceleration;
+public class Boid extends Vehicle {
     private double maxSpeed = 4;
-    private double maxForce = 0.01;
+    private double viewingRadius = 50;
+    private double viewingAngle = Math.PI;
+    private double desiredSeparation = 30;
     private boolean debug = false;
-    private double viewingRadius = 100;
-    private double viewingAngle = 3 * Math.PI / 4;
-    private double desiredSeparation = 2;
     private boolean red = false;
+    private ArrayList<Boid> visibleBoids = new ArrayList<>();
 
     public void setRed(boolean b) {
         this.red = b;
@@ -62,17 +59,9 @@ public class Boid {
         return inView;
     }
 
-    public Vector2 getPosition() {
-        return this.position;
-    }
-
-    public Vector2 getVelocity() {
-        return this.velocity;
-    }
-
     public Vector2 separate(ArrayList<Boid> inView) {
-        Vector2 steeringForce = new Vector2();
         Vector2 sum = new Vector2();
+        int count = 0;
         for (Boid b : inView) {
             double distance = b.getPosition().distance(this.position);
             if (distance > desiredSeparation) {
@@ -80,20 +69,22 @@ public class Boid {
             }
             Vector2 desiredSteering = Vector2.sub(this.position, b.getPosition());
             desiredSteering.normalize();
+            desiredSteering.div(distance);
             sum.add(desiredSteering);
+            count++;
         }
-        if (inView.size() > 0) {
-            sum.div(inView.size());
+        if (count > 0) {
+            sum.div(count);
             sum.normalize();
             sum.mult(maxSpeed);
-            steeringForce = Vector2.sub(sum, this.velocity);
-            steeringForce.limit(maxForce);
+            Vector2 steeringForce = Vector2.sub(sum, this.velocity);
+            steeringForce.limit(this.maxForce);
+            return steeringForce;
         }
-        return steeringForce;
+        return new Vector2();
     }
 
     public Vector2 align(ArrayList<Boid> inView) {
-        Vector2 steeringForce = new Vector2();
         Vector2 sum = new Vector2();
         for (Boid b : inView) {
             sum.add(b.getVelocity());
@@ -101,47 +92,43 @@ public class Boid {
         if (inView.size() > 0) {
             sum.div(inView.size());
             sum.normalize();
-            sum.mult(maxSpeed);
-            steeringForce = Vector2.sub(sum, this.velocity);
-            steeringForce.limit(maxForce);
+            sum.mult(this.maxSpeed);
+            Vector2 steering = Vector2.sub(sum, velocity);
+            steering.limit(this.maxForce);
+            return steering;
         }
-        return steeringForce;
+        return new Vector2();
     }
 
     public Vector2 cohesion(ArrayList<Boid> inView) {
-        Vector2 steeringForce = new Vector2();
         Vector2 sum = new Vector2();
         for (Boid b : inView) {
             sum.add(b.getPosition());
         }
         if (inView.size() > 0) {
             sum.div(inView.size());
-            sum.normalize();
-            sum.mult(maxSpeed);
-            steeringForce = Vector2.sub(sum, this.velocity);
-            steeringForce.limit(maxForce);
+            return getSteeringForce(sum);
         }
-        return steeringForce;
+        return new Vector2();
     }
 
-    public Vector2 avoidWalls(PApplet sketch) {
+    public Vector2 avoidWalls(Vector2 sketchSize) {
         Vector2 desired = new Vector2(this.velocity);
         if (this.position.getX() < 25) {
             desired.setX(maxSpeed);
         }
-        if (this.position.getX() > sketch.width - 25) {
+        if (this.position.getX() > sketchSize.getX() - 25) {
             desired.setX(maxSpeed * -1);
         }
         if (this.position.getY() < 25) {
             desired.setY(maxSpeed);
         }
-        if (this.position.getY() > sketch.height - 25) {
+        if (this.position.getY() > sketchSize.getY() - 25) {
             desired.setY(maxSpeed * -1);
         }
         desired.normalize();
         desired.mult(maxSpeed);
         Vector2 steeringForce = Vector2.sub(desired, this.velocity);
-        steeringForce.limit(0.5);
         return steeringForce;
     }
 
@@ -161,20 +148,22 @@ public class Boid {
     }
 
     public void update(double deltaTime, PApplet sketch, ArrayList<Boid> boidList) {
-        ArrayList<Boid> inView = getBoidsInView(boidList);
+        this.visibleBoids = getBoidsInView(boidList);
 
         if (this.debug) {
-            System.out.println("There are " + inView.size() + " boids in view");
+            System.out.println("There are " + this.visibleBoids.size() + " boids in view");
         }
+
+        // this.applyForce(avoidWalls(new Vector2(sketch.width, sketch.height)));
+        this.applyForce(separate(this.visibleBoids));
+        this.applyForce(align(this.visibleBoids));
+        this.applyForce(cohesion(this.visibleBoids));
 
         this.velocity.add(this.acceleration);
         this.velocity.limit(maxSpeed);
         this.position.add(this.velocity);
-        this.acceleration.add(avoidWalls(sketch));
-        this.acceleration.add(separate(inView));
-        this.acceleration.add(align(inView));
-        this.acceleration.add(cohesion(inView));
         wrapCanvas(sketch);
+        this.acceleration.mult(0);
     }
 
     public void drawBoid(PApplet sketch) {
@@ -200,29 +189,28 @@ public class Boid {
         sketch.pushMatrix();
         sketch.ellipseMode(PConstants.RADIUS);
         sketch.translate((int)position.getX(), (int)position.getY());
-        sketch.rotate((float)(velocity.heading() + Math.PI / 2));
+        sketch.rotate((float)(velocity.heading()));
         sketch.noFill();
         sketch.arc(
-            0, 0, (float)viewingRadius, (float)viewingRadius,
-            (float)(3 * Math.PI / 4),
-            (float)(Math.PI / 4 + 2 * Math.PI),
+            0, 0,
+            (float)viewingRadius, (float)viewingRadius,
+            (float)-this.viewingAngle, (float)this.viewingAngle,
             PConstants.PIE);
         sketch.popMatrix();
     }
 
-    public void drawLinesToVisibleBoids(PApplet sketch, ArrayList<Boid> boidList) {
-        ArrayList<Boid> inView = getBoidsInView(boidList);
-        for (Boid b : inView) {
+    public void drawLinesToVisibleBoids(PApplet sketch) {
+        for (Boid b : this.visibleBoids) {
             sketch.line(
                 (float)this.position.getX(), (float)this.position.getY(),
                 (float)b.getPosition().getX(), (float)b.getPosition().getY());
         }
     }
 
-    public void draw(PApplet sketch, ArrayList<Boid> boidList) {
+    public void draw(PApplet sketch) {
         if (this.debug) {
             drawPerceptionRadius(sketch);
-            drawLinesToVisibleBoids(sketch, boidList);
+            drawLinesToVisibleBoids(sketch);
         }
         drawBoid(sketch);
     }
